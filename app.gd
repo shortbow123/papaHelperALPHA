@@ -86,7 +86,7 @@ func recordData(recordWhat, value):
 func reviewData():
 	pass
 
-func _on_home_pressed():
+func _on_home_pressed(): 
 	setScreen("homeScreen")
 
 func _on_settings_pressed():
