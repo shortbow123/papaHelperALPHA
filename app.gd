@@ -19,22 +19,14 @@ var periods2024 = {
 	12: 1730098800,
 }
 var versionInfo = "Alpha "
-var revisionNumber = "0.1.5 "
+var revisionNumber = "0.2.0 "
 var revisionType = "A " # A=Android I=IOS D=Debug
 var popupFor = ""
 var entries = []
 var loadedSave
 var currentPeriod = 0
 var clearSave = false
-var dummyEntry = {
-	"hoursWorked": 0,
-	"insideTips": 0,
-	"driverTips": 0,
-	"travelHours": 0,
-	"editTime": 0,
-	"date": 0,
-	"period": 0
-}
+var whichEntrySelected = 0
 # datecode is how many days since jan 1st 2024
 # dummy entry
 # [hoursworked, insidetips, drivertips, hours driven]
@@ -74,7 +66,8 @@ func loadVariables():
 	entries = loadedSave["savedEntries"]
 
 func _ready():
-	$homeScreen/version.text = str(versionInfo + revisionNumber + revisionType)
+	$canvas/homeScreen/version.text = str(versionInfo + revisionNumber + revisionType)
+	#resizeElements()
 	setCurrentPeriod()
 	setScreen("homeScreen")
 	if clearSave:
@@ -99,20 +92,20 @@ func setScreen(screenToShow):
 func popupConfirm(pressed):
 	if popupFor == "recordHours":
 		if pressed:
-			recordData("hours", $popup/recordHours/select.value)
+			recordData("hours", $canvas/popup/recordHours/select.value)
 		else:
 			pass
 		popupFor = ""
-		$popup.visible = false
-		$popup/recordHours.visible = false
+		$canvas/popup.visible = false
+		$canvas/popup/recordHours.visible = false
 
 func popupControl(whatPopup):
-	$popup.popup()
+	$canvas/popup.popup()
 	if whatPopup == "recordHours":
-		$popup.window_title = "Record hours"
-		$popup/header.text = "Enter hours worked today:"
+		$canvas/popup.window_title = "Record hours"
+		$canvas/popup/header.text = "Enter hours worked today:"
 		popupFor = "recordHours"
-		$popup/recordHours.visible = true
+		$canvas/popup/recordHours.visible = true
 
 func recordData(recordWhat, value):
 	var newEntry = {
@@ -127,7 +120,7 @@ func recordData(recordWhat, value):
 	if recordWhat == "hours":
 		newEntry["editTime"] = returnEpoch()
 		newEntry["date"] = returnEpoch()
-		newEntry["hoursWorked"] = $popup/recordHours/select.value
+		newEntry["hoursWorked"] = $canvas/popup/recordHours/select.value
 		newEntry["period"] = currentPeriod
 	entries.append(newEntry)
 	print(entries)
@@ -149,15 +142,51 @@ func setCurrentPeriod():
 func reviewData():
 	var totalHours = 0
 	#var testt = Time.get_date_string_from_unix_time(entry["date"]) + ": " + str(entry["hoursWorked"])
-	for i in range($reviewData/list.get_item_count()):
-		$reviewData/list.remove_item(0)
+	for i in range($canvas/reviewData/list.get_item_count()):
+		$canvas/reviewData/list.remove_item(0)
 	for entry in entries:
-		$reviewData/list.add_item((Time.get_date_string_from_unix_time(entry["date"]) + ": " + str(entry["hoursWorked"])))
+		$canvas/reviewData/list.add_item((Time.get_date_string_from_unix_time(entry["date"]) + ": " + str(entry["hoursWorked"])))
 		totalHours += entry["hoursWorked"]
 		#var newas = (testt(entry["date"]))
 		# + ": " + str(entry[hoursWorked])))
-	$reviewData/totalbg/total.text = "Total Hours: " + str(totalHours)
+	$canvas/reviewData/totalbg/total.text = "Total Hours: " + str(totalHours)
 
+func _process(delta):
+	pass
+	#resizeElements()
+
+func resizeElements():
+	#print_debug()
+	#print(get_children().get_class())
+	for item in get_children():
+		
+		# print(item.get_class())
+		#print_debug()
+	#	item.size = get_viewport().size / 2
+	#print(get_tree().get_nodes_in_group("s"))
+		#$homeScreen.
+		#print(item.get_class())
+		
+		if (not item.get_class() == "Panel") and (not item.get_class() == "WindowDialog"): # and #not item.get_class() == "WindowDialog":#) and (item.get_class() == "WindowDialog"):
+			item.size = get_viewport().size * .8
+			#print_debug()
+			print("here")
+	for panel in get_tree().get_nodes_in_group("screen"):
+		panel.set_size(get_viewport().size)
+		#print_debug()
+
+func selectEntryToEdit(index):
+	toggleEditButtons(true)
+	whichEntrySelected = index
+	
+
+func toggleEditButtons(enable):
+	if enable:
+		$canvas/reviewData/controlbg/edit.disabled = false
+		$canvas/reviewData/controlbg/delete.disabled = false
+	else:
+		$canvas/reviewData/controlbg/edit.disabled = true
+		$canvas/reviewData/controlbg/delete.disabled = true
 func _on_home_pressed(): 
 	setScreen("homeScreen")
 
@@ -179,3 +208,13 @@ func _on_cancel_pressed():
 func _on_review_pressed():
 	setScreen("reviewData")
 	reviewData()
+
+
+
+
+func _on_list_item_selected(index):
+	selectEntryToEdit(index)
+
+
+func _on_list_nothing_selected():
+	toggleEditButtons(false)

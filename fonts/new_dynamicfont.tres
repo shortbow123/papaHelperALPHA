@@ -4,5 +4,5 @@
 font_path = "res://resources/mainfont.TTF"
 
 [resource]
-size = 45
+size = 30
 font_data = SubResource( 1 )
