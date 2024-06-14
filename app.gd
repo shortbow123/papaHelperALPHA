@@ -60,6 +60,9 @@ func loadData():
 	save_game.open(saveLocation, File.READ)
 	loadedSave = parse_json(save_game.get_line())
 	save_game.close()
+	if loadedSave["saveVersion"] == 1:
+		#upgrade database code here
+		pass
 	loadVariables()
 
 func loadVariables(): 
@@ -67,7 +70,6 @@ func loadVariables():
 
 func _ready():
 	$canvas/homeScreen/version.text = str(versionInfo + revisionNumber + revisionType)
-	#resizeElements()
 	setCurrentPeriod()
 	setScreen("homeScreen")
 	if clearSave:
@@ -133,10 +135,11 @@ func setCurrentPeriod():
 	while true:
 		if periods2024[periodR] < currentEpoch and periods2024[periodR + 1] >= currentEpoch: 
 			currentPeriod = periodR
+			print(currentPeriod)
 			break
 		else:
-			print(currentEpoch)
-			print(periods2024[periodR])
+			#print(currentEpoch)
+			#print(periods2024[periodR])
 			periodR += 1
 
 func reviewData():
@@ -151,35 +154,17 @@ func reviewData():
 		# + ": " + str(entry[hoursWorked])))
 	$canvas/reviewData/totalbg/total.text = "Total Hours: " + str(totalHours)
 
-func _process(delta):
-	pass
-	#resizeElements()
+func reviseData(function):
+	if function == "edit":
+		pass
+	elif function == "delete":
+		pass
 
-func resizeElements():
-	#print_debug()
-	#print(get_children().get_class())
-	for item in get_children():
-		
-		# print(item.get_class())
-		#print_debug()
-	#	item.size = get_viewport().size / 2
-	#print(get_tree().get_nodes_in_group("s"))
-		#$homeScreen.
-		#print(item.get_class())
-		
-		if (not item.get_class() == "Panel") and (not item.get_class() == "WindowDialog"): # and #not item.get_class() == "WindowDialog":#) and (item.get_class() == "WindowDialog"):
-			item.size = get_viewport().size * .8
-			#print_debug()
-			print("here")
-	for panel in get_tree().get_nodes_in_group("screen"):
-		panel.set_size(get_viewport().size)
-		#print_debug()
 
 func selectEntryToEdit(index):
 	toggleEditButtons(true)
 	whichEntrySelected = index
 	
-
 func toggleEditButtons(enable):
 	if enable:
 		$canvas/reviewData/controlbg/edit.disabled = false
@@ -187,6 +172,7 @@ func toggleEditButtons(enable):
 	else:
 		$canvas/reviewData/controlbg/edit.disabled = true
 		$canvas/reviewData/controlbg/delete.disabled = true
+
 func _on_home_pressed(): 
 	setScreen("homeScreen")
 
@@ -209,12 +195,20 @@ func _on_review_pressed():
 	setScreen("reviewData")
 	reviewData()
 
-
-
-
 func _on_list_item_selected(index):
 	selectEntryToEdit(index)
 
 
 func _on_list_nothing_selected():
+	whichEntrySelected = null
 	toggleEditButtons(false)
+
+
+func _on_edit_pressed():
+	reviseData("edit")
+	pass # Replace with function body.
+
+
+func _on_delete_pressed():
+	reviseData("delete")
+	pass # Replace with function body.
